@@ -1,16 +1,18 @@
 <?php
-    define('FILENAME', './message.txt');
+    // DBの接続情報
+    define( 'DB_PORT', '8889');
+    define( 'DB_USER', 'root');
+    define( 'DB_PASS', 'root');
+    define( 'DB_NAME', 'board');
+
+    // タイムゾーン設定
     date_default_timezone_set('Asia/Tokyo');
     // 変数の初期化(不具合防止)
     $curren_date=null;
-    $data=null;
-    $file_handle=null;
-    $split_data=null;
     $message=array();
     $message_array=array();
     $success_message=null;
     $error_message=null;
-    $sanitize=array();
     $pdo=null;
     $stmt=null;
     $res=null;
@@ -22,7 +24,7 @@
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
         );
-        $pdo = new PDO('mysql:charset=UTF8;dbname=board;port=8889','root','root',$opt);
+        $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_PORT , DB_USER, DB_PASS, $opt);
     } catch(PDOException $e){
         //接続エラー時にエラー内容を取得
         $error_message[] = $e->getMessage();
@@ -41,23 +43,7 @@
         }
 
         if(empty($error_message)){
-            /*
-            //var_dump($_POST);
-            //FILENAMEに設定したtxtファイルを開く
-            if($file_handle=fopen(FILENAME,"a")){
-                // 書き込み時間取得
-                $current_date=date("Y-m-d H:i:s");
-                // 書き込むデータ作成
-                // '名前','書き込み内容','書き込み時間'
-                $data = "'".$sanitize['user_name']."','".$sanitize['message']."','".$current_date."'\n";
-                // 書き込み
-                fwrite($file_handle,$data);
-                // ファイルを閉じる
-                fclose($file_handle);
-                // 書きこんだら表示される文章
-                $success_message = '書き込み完了(´ ∀ `)';
-            }
-            */
+
             // 書き込み日時取得
             $current_date = date("Y-m-d H:i:s");
             // トランザクション開始
@@ -84,7 +70,7 @@
             // コミット,PDOで登録したデータをDBに反映
             $res = $pdo->commit();
             } catch(Exception $e) {
-                // エラー発生時にはロールバックする
+                // エラー発生時にはロールバック(データが来る前に戻す)する
                 $pdo->rollBack();
             }
 
@@ -97,23 +83,15 @@
             $stmt = null;
         }
     }
+
+    if( empty($error_message)){
+        // メッセージを新しい順に取得する
+        $sql = "SELECT user_name,message,post_date FROM message ORDER BY post_date DESC";
+        $message_array = $pdo->query($sql);
+    }
     // DBとの接続を閉じる
     $pdo = null;
 
-    if($file_handle=fopen(FILENAME,'r')){
-        while($data=fgets($file_handle)){
-            // echo $data."<br>";
-            $split_data=preg_split('/\'/',$data);
-            $message=array(
-                'user_name'=>$split_data[1],
-                'message'=>$split_data[3],
-                'post_date'=>$split_data[5]
-            );
-            array_unshift($message_array,$message);
-        }
-        //ファイル閉じる
-        fclose($file_handle);
-    }
 ?>
 <!DOCTYPE html>
 <html>
@@ -152,11 +130,11 @@
                 <article>
                     <div class="info">
                         <!-- 実際に掲示板に表示される部分 -->
-                        <h2><?php echo $value['user_name']; ?></h2>
+                        <h2><?php echo htmlspecialchars( $value['user_name'], ENT_QUOTES, 'UTF-8'); ?></h2>
                         <!-- [strtotime]で文字列になってる時刻をタイムスタンプ形式に変換 -->
                         <time><?php echo date('Y年m月d日 H:i', strtotime($value['post_date'])); ?></time>
                     </div>
-                    <p><?php echo $value['message']; ?></p>
+                    <p><?php echo nl2br(htmlspecialchars( $value['message'], ENT_QUOTES, 'UTF-8')); ?></p>
                 </article>
                 <?php endforeach; ?>
                 <?php endif; ?>
