@@ -138,6 +138,7 @@ label {
 }
 
 input[type="text"],
+input[type="password"],
 textarea {
     font-family:'ヒラギノ角ゴ Pro W3','Hiragino Kaku Gothic Pro','メイリオ',Meiryo,'ＭＳ Ｐゴシック',sans-serif;
 	margin-bottom: 20px;
@@ -148,7 +149,8 @@ textarea {
     background: #fff;
 }
 
-input[type="text"] {
+input[type="text"]
+input[type="password"] {
 	width: 200px;
 }
 textarea {

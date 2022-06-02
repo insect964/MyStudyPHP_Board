@@ -18,6 +18,8 @@
     $res=null;
     $opt=null;
 
+    session_start();
+
     // DBに接続
     try{
         $opt = array(
@@ -36,8 +38,12 @@
         // 表示名の入力チェック
         if(empty($user_name)){
             $error_message[]='投稿者名を入力してください';
+        } else {
+            // セッションに表示名を保存
+            $_SESSION['user_name'] = $user_name;
         }
 
+        // メッセージの入力チェック
         if(empty($message)){
             $error_message[]='内容を入力してください';
         }
@@ -115,7 +121,9 @@
         <form method="post">
             <div>
                 <Label for="user_name">投稿者名</Label>
-                <input type="text" id="user_name" name="user_name" placeholder="葵屋太郎">
+                <input type="text" id="user_name" name="user_name" value="<?php 
+                    if( !empty($_SESSION['user_name']) ){echo htmlspecialchars($_SESSION['user_name'],ENT_QUOTES,'UTF-8'); } ?>"
+                    placeholder="葵屋太郎">
             </div>
             <div>
                 <label for="message">内容</label>
