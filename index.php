@@ -8,10 +8,10 @@
     // タイムゾーン設定
     date_default_timezone_set('Asia/Tokyo');
     // 変数の初期化(不具合防止)
+    $user_name = null;
     $curren_date=null;
     $message=array();
     $message_array=array();
-    $success_message=null;
     $error_message=null;
     $pdo=null;
     $stmt=null;
@@ -46,6 +46,11 @@
         // メッセージの入力チェック
         if(empty($message)){
             $error_message[]='内容を入力してください';
+        } else {
+            // 文字数確認
+            if( 500 < mb_strlen($message, 'UTF-8')){
+                $error_message[] = '内容は500文字以内にしてください。';
+            }
         }
 
         if(empty($error_message)){
@@ -81,12 +86,15 @@
             }
 
             if($res){
-                $success_message = '書き込み完了(´ ∀ `)';
+                $_SESSION['success_message'] = '書き込み完了(´ ∀ `)';
             } else {
                 $error_message[] = '書き込み失敗(´・ω・`)';
             }
             // プリペアードステートメントを削除
             $stmt = null;
+
+            header('Location: ./');
+            exit;
         }
     }
 
@@ -108,8 +116,10 @@
     </head>
     <body>
         <h1>社員用雑談掲示板</h1>
-        <?php if(!empty($success_message)): ?>
-            <p class="success_message"><?php echo $success_message; ?></p>
+        <?php if( empty($_POST['submit']) && !empty($_SESSION['success_message'])): ?>
+            <p class="success_message"><?php echo htmlspecialchars( $_SESSION['success_message'],
+            ENT_QUOTES,'UTF-8'); ?></p>
+                <?php unset($_SESSION['success_message']) ?>
         <?php endif; ?>
         <?php if(!empty($error_message)): ?>
             <ul class="error_message">
@@ -127,7 +137,9 @@
             </div>
             <div>
                 <label for="message">内容</label>
-                <textarea name="message" id="message"></textarea>
+                <textarea name="message" id="message"><?php if(!empty($message)){
+                    echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+                } ?></textarea>
             </div>
             <input type="submit" name="submit" value="送信">
         </form>
