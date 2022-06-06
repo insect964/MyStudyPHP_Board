@@ -5,6 +5,9 @@
     define( 'DB_PASS', 'root');
     define( 'DB_NAME', 'board');
 
+    // 画像を保存する場所指定
+    define( 'FILE_DIR', "images/");
+
     // タイムゾーン設定
     date_default_timezone_set('Asia/Tokyo');
     // 変数の初期化(不具合防止)
@@ -12,10 +15,12 @@
     $curren_date=null;
     $message=array();
     $message_array=array();
+    $upload_file=array();
     $error_message=null;
     $pdo=null;
     $stmt=null;
     $res=null;
+    $upload_res=null;
     $opt=null;
 
     session_start();
@@ -52,19 +57,31 @@
                 $error_message[] = '内容は500文字以内にしてください。';
             }
         }
-
+        // 画像アップロードの処理
+        if(!empty($_FILES['upload_file']['tmp_name'])){
+            $upload_res = move_uploaded_file($_FILES['upload_file']['tmp_name'],
+            FILE_DIR.$_FILES['upload_file']['name']);
+            // 画像アップロード時のエラーチェック
+            if($upload_res !== true){
+                $error_message[] = '画像アップ失敗(´・ω・`)';
+            } else {
+                $upload_file['upload_file'] = $_FILES['upload_file']['name'];
+            }
+        }
         if(empty($error_message)){
 
             // 書き込み日時取得
             $current_date = date("Y-m-d H:i:s");
+            // ファイルのアップロード
             // トランザクション開始
             $pdo->beginTransaction();
             try{
             // SQL作成
-            $stmt = $pdo->prepare("INSERT INTO message ( user_name, message, post_date) VALUES ( :user_name, :message, :current_date)");
+            $stmt = $pdo->prepare("INSERT INTO message ( user_name, message, upload_file, post_date) VALUES ( :user_name, :message, :upload_file, :current_date)");
             // 値をセット
             $stmt->bindParam(':user_name',$user_name, PDO::PARAM_STR);
             $stmt->bindParam(':message',$message, PDO::PARAM_STR);
+            $stmt->bindParam(':upload_file',$upload_file, PDO::PARAM_STR);
             $stmt->bindParam(':current_date',$current_date, PDO::PARAM_STR);
             // SQLクエリの実行
             $res = $stmt->execute();
@@ -100,7 +117,7 @@
 
     if( empty($error_message)){
         // メッセージを新しい順に取得する
-        $sql = "SELECT user_name,message,post_date FROM message ORDER BY post_date DESC";
+        $sql = "SELECT user_name,message,upload_file,post_date FROM message ORDER BY post_date DESC";
         $message_array = $pdo->query($sql);
     }
     // DBとの接続を閉じる
@@ -128,7 +145,7 @@
                 <?php endforeach; ?>
             </ul>
         <?php endif; ?>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <div>
                 <Label for="user_name">投稿者名</Label>
                 <input type="text" id="user_name" name="user_name" value="<?php 
@@ -140,6 +157,10 @@
                 <textarea name="message" id="message"><?php if(!empty($message)){
                     echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
                 } ?></textarea>
+            </div>
+            <div>
+                <label for="upload_file">画像</label>
+                <input type="file" id="upload_file" name="upload_file">
             </div>
             <input type="submit" name="submit" value="送信">
         </form>
@@ -155,6 +176,9 @@
                         <time><?php echo date('Y年m月d日 H:i', strtotime($value['post_date'])); ?></time>
                     </div>
                     <p><?php echo nl2br(htmlspecialchars( $value['message'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <?php if(!empty($value['upload_file'])): ?>
+                    <p><img src="<?php echo FILE_DIR.$upload_file['name']; ?>"></p>
+                    <?php endif; ?>
                 </article>
                 <?php endforeach; ?>
                 <?php endif; ?>
