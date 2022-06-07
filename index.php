@@ -5,17 +5,21 @@
     define( 'DB_PASS', 'root');
     define( 'DB_NAME', 'board');
 
+    ini_set("display_errors", 1);
+    error_reporting(E_ALL);
+
     // 画像を保存する場所指定
     define( 'FILE_DIR', "images/");
 
     // タイムゾーン設定
     date_default_timezone_set('Asia/Tokyo');
     // 変数の初期化(不具合防止)
-    $user_name = null;
+    $user_name=null;
     $curren_date=null;
     $message=array();
     $message_array=array();
-    $upload_file=array();
+    $filename=array();
+    $upload_file=null;
     $error_message=null;
     $pdo=null;
     $stmt=null;
@@ -65,7 +69,8 @@
             if($upload_res !== true){
                 $error_message[] = '画像アップ失敗(´・ω・`)';
             } else {
-                $upload_file['upload_file'] = $_FILES['upload_file']['name'];
+                $filename = $_FILES['upload_file']['name'];
+                $upload_file = FILE_DIR.$filename;
             }
         }
         if(empty($error_message)){
@@ -177,7 +182,7 @@
                     </div>
                     <p><?php echo nl2br(htmlspecialchars( $value['message'], ENT_QUOTES, 'UTF-8')); ?></p>
                     <?php if(!empty($value['upload_file'])): ?>
-                    <p><img src="<?php echo FILE_DIR.$upload_file['name']; ?>"></p>
+                    <p><img src="<?php echo $value['upload_file']; ?>" width="200" height="200"></p>
                     <?php endif; ?>
                 </article>
                 <?php endforeach; ?>
