@@ -3,7 +3,7 @@
     define( 'DB_PORT', '8889');
     define( 'DB_USER', 'root');
     define( 'DB_PASS', 'root');
-    define( 'DB_NAME', 'board');
+    define( 'DB_NAME', 'test');
 
     ini_set("display_errors", 1);
     error_reporting(E_ALL);
@@ -14,8 +14,8 @@
     $user_name=null;
     $permission=null;
     $password=null;
-    $hash=null;
-    $verify=null;
+    $hash_before=null;
+    $hash_after=null;
     $message=array();
     $message_array=array();
     $filename=array();
@@ -44,7 +44,7 @@
         // 空白除去
         $user_name = preg_replace( '/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '', $_POST['user_name']);
         $permission = preg_replace( '/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '', $_POST['permission']);
-        $hash = preg_replace( '/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '', $_POST['hash']);
+        $hash_before = preg_replace( '/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '', $_POST['hash_before']);
         // 表示名の入力チェック
         if(empty($user_name)){
             $error_message[]='投稿者名を入力してください';
@@ -55,8 +55,10 @@
             $error_message[]='権限を選択してください';
         }
         // パスワードのハッシュ化
-        if(empty($hash)){
-            $password = password_hash($hash,PASSWORD_DEFAULT);
+        if(empty($hash_before)){
+            $error_message[]='パスワードが入力されていません';
+        }else{
+            $password = password_hash($hash_before,PASSWORD_DEFAULT);
         }
 
         if(empty($error_message)){
@@ -66,11 +68,12 @@
             $pdo->beginTransaction();
             try{
             // SQL作成
-            $stmt = $pdo->prepare("INSERT INTO user_list ( user_name, permission, password) VALUES ( :user_name, :permission, :password)");
+            $stmt = $pdo->prepare("INSERT INTO user_list ( user_name, permission, password, hash) VALUES ( :user_name, :permission, :password, :hash)");
             // 値をセット
             $stmt->bindParam(':user_name',$user_name, PDO::PARAM_STR);
             $stmt->bindParam(':permission',$permission, PDO::PARAM_STR);
-            $stmt->bindParam(':password',$password, PDO::PARAM_STR);
+            $stmt->bindParam(':password',$hash_before, PDO::PARAM_STR);
+            $stmt->bindParam(':hash',$password,PDO::PARAM_STR);
             // SQLクエリの実行
             $res = $stmt->execute();
             // コミット,PDOで登録したデータをDBに反映
@@ -95,7 +98,7 @@
 
     if( empty($error_message)){
         // メッセージを新しい順に取得する
-        $sql = "SELECT user_name,permission,password FROM user_list ORDER BY id ASC";
+        $sql = "SELECT user_name,permission,password,hash FROM user_list ORDER BY id ASC";
         $message_array = $pdo->query($sql);
     }
     // DBとの接続を閉じる
@@ -110,7 +113,7 @@
         <link rel="stylesheet" type="text/css" href="stylesheet.css">
     </head>
     <body>
-        <h1>ユーザー登録ページ</h1>
+        <h1>ユーザー認証</h1>
         <?php if( empty($_POST['submit']) && !empty($_SESSION['success_message'])): ?>
             <p class="success_message"><?php echo htmlspecialchars( $_SESSION['success_message'],
             ENT_QUOTES,'UTF-8'); ?></p>
@@ -126,9 +129,7 @@
         <form method="post">
             <div>
                 <Label for="user_name">ユーザー名</Label>
-                <input type="text" id="user_name" name="user_name" value="<?php 
-                    if( !empty('user_name') ){echo htmlspecialchars($user_name,ENT_QUOTES,'UTF-8'); } ?>"
-                    placeholder="葵屋太郎">
+                <input type="text" id="user_name" name="user_name" value="" placeholder="葵屋太郎">
             </div>
             <div>
                 <label for="permission">内容</label>
@@ -138,8 +139,8 @@
                 </select>
             </div>
             <div>
-                <label for="hash">パスワード</label>
-                <input type="password" id="hash" name="password" minlength="8" required>
+                <label for="password">パスワード</label>
+                <input type="password" id="password" name="hash_before" minlength="8" required>
             </div>
             <input type="submit" name="submit" value="送信">
         </form>
@@ -150,10 +151,17 @@
                 <article>
                     <div class="info">
                         <!-- 実際に掲示板に表示される部分 -->
-                        <h2><?php echo htmlspecialchars( $value['user_name'], ENT_QUOTES, 'UTF-8'); ?></h2>
+                        <?php echo htmlspecialchars( $value['user_name'], ENT_QUOTES, 'UTF-8'); ?>
+                        <?php echo htmlspecialchars( $value['permission'], ENT_QUOTES, 'UTF-8'); ?>
+                        <?php echo htmlspecialchars( $value['password'], ENT_QUOTES, 'UTF-8'); ?>
+                        <?php echo htmlspecialchars( $value['hash'], ENT_QUOTES, 'UTF-8'); ?>
+                        <?php if(password_verify($value['password'],$value['hash'])){
+                            echo 'Password is True';
+                        } else {
+                            echo 'Password is False';  
+                        }
+                        ?>
                     </div>
-                    <p><?php echo htmlspecialchars( $value['permission'], ENT_QUOTES, 'UTF-8'); ?></p>
-                    <p><?php echo htmlspecialchars( $value['password'], ENT_QUOTES, 'UTF-8'); ?></p>
                 </article>
                 <?php endforeach; ?>
                 <?php endif; ?>
