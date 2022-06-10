@@ -3,7 +3,7 @@
     define( 'DB_PORT', '8889');
     define( 'DB_USER', 'root');
     define( 'DB_PASS', 'root');
-    define( 'DB_NAME', 'test');
+    define( 'DB_NAME', 'board');
 
     /*
     ini_set("display_errors", 1);
@@ -52,7 +52,7 @@
         // 認証
         if(password_verify($_POST['password'], $result['hash'])){
             // echo "ログイン成功";
-            header("Location: ./test.php");
+            header("Location: ./mypage.php");
         } else {
             echo "ログイン失敗";
         }
@@ -63,7 +63,7 @@
 <html>
     <head>
         <title>掲示板ログインページ</title>
-        <link rel="stylesheet" type="text/css" href="../stylesheet.css">
+        <link rel="stylesheet" type="text/css" href="stylesheet.css">
     </head>
     <body>
         <h1>ログインページ</h1>
