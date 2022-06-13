@@ -5,9 +5,22 @@
     define( 'DB_PASS', 'root');
     define( 'DB_NAME', 'board');
 
+    ini_set("display_errors", 1);
+    error_reporting(E_ALL);
+
     // タイムゾーン設定
     date_default_timezone_set('Asia/Tokyo');
+
     // 変数の初期化(不具合防止)
+    $user_name = null;
+    $message = array();
+    $message_data = null;
+    $error_message = array();
+    $pdo = null;
+    $stmt = null;
+    $res = null;
+    $opt = null;
+    
     session_start();
 
     // 管理者としてログインしているか確認
@@ -49,7 +62,7 @@
         }
     } elseif( !empty($_POST['message_id'])){
         // 空白除去
-        $view_name = preg_replace( '/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '',
+        $user_name = preg_replace( '/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '',
         $_POST['user_name']);
         $message = preg_replace( '/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '',
         $_POST['message']);
