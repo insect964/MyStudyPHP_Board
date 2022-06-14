@@ -1,4 +1,4 @@
-<?php
+<?php 
     // DBの接続情報
     define( 'DB_PORT', '8889');
     define( 'DB_USER', 'root');
@@ -31,6 +31,17 @@
 
     session_start();
 
+    /*if(!empty($_GET['logout'])){
+        unset($_SESSION['admin_login']);
+    }
+
+    // 管理者としてログインしているか確認
+    if( empty($_SESSION['admin_login']) || $_SESSION['admin_login'] !== true) {
+        // ログインページへリダイレクト
+        header("Location: ./admin_login.php");
+        exit;
+    }*/
+
     // DBに接続
     try{
         $opt = array(
@@ -42,45 +53,42 @@
         //接続エラー時にエラー内容を取得
         $error_message[] = $e->getMessage();
     }
-    if(!empty($_POST['submit'])){
 
+    if(!empty($_POST['name_change'])){
+        
+    } else {
+    if(!empty($_POST['password_change'])){
 
-        // sql
-        $stmt = $pdo->prepare('SELECT * FROM user_list WHERE user_name = :user_name');
-        // 実行
-        $stmt->execute(array(':user_name' => $_POST['user_name']));
-        // 実行結果(fetchはテーブルのレコードを取得)
-        // fetchだと問題がなく、fetchAllだとエラーになりNULLが出てくる。要勉強。
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // 認証
-        if(password_verify($_POST['password'], $result['hash'])){
-            // echo "ログイン成功";
-            header("Location: ./mypage.php");
-        } else {
-            echo "ログイン失敗";
-        }
     }
+}
+    
 ?>
 
 <!DOCTYPE html>
 <html>
     <head>
-        <title>掲示板ログインページ</title>
+        <meta charset="utf-8">
+        <title>マイページ</title>
         <link rel="stylesheet" type="text/css" href="stylesheet.css">
     </head>
     <body>
-        <h1>ログインページ</h1>
+        <h1>マイページ</h1>
+        <hr>
+        <section>
         <form method="post">
-        <div>
-            <label>ユーザー名</label>
-            <input type="text" name="user_name">
-        </div>
-        <div>
-            <label>パスワード</label>
-            <input type="password" name="password">
-        </div>
-        <input type="submit" name="submit" value="ログイン">
+            <table>
+                <div>
+                    <th><h2>ユーザー名</h2></th>
+                    <td><input type="submit" name="name_change" value="ユーザー名変更"></td>
+                </div>
+            </table>
+            <table>
+                <div>
+                    <th><h2>パスワード変更</h2></th>
+                    <td><input type="submit" name="password_change" value="変更"></td>
+                </div>
+            </table>
         </form>
+        </section>
     </body>
 </html>

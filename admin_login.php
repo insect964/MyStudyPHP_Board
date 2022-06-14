@@ -56,7 +56,8 @@
         // 認証
         if(password_verify($_POST['password'], $result['hash'])){
             // echo "ログイン成功";
-            header("Location: ./mypage.php");
+            // $_SESSION['admin_login'] = true;
+            header("Location: ./admin_page.php");
         } else {
             echo "ログイン失敗";
         }
