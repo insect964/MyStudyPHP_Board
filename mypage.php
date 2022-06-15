@@ -31,16 +31,9 @@
 
     session_start();
 
-    /*if(!empty($_GET['logout'])){
+    if(!empty($_GET['logout'])){
         unset($_SESSION['admin_login']);
     }
-
-    // 管理者としてログインしているか確認
-    if( empty($_SESSION['admin_login']) || $_SESSION['admin_login'] !== true) {
-        // ログインページへリダイレクト
-        header("Location: ./admin_login.php");
-        exit;
-    }*/
 
     // DBに接続
     try{
@@ -58,20 +51,23 @@
         $pdo->beginTransaction();
         try{
             // 処理
+            header("Location: ./change_name.php");
             } catch(Exception $e) {
                 // エラー発生時にはロールバック(データが来る前に戻す)する
                 $pdo->rollBack();
             }
-    } else {
-    if(!empty($_POST['password_change'])){
-        try{
-            // 処理
-        } catch(Exception $e) {
-            // 処理
-            $pdo->rollBack();
+        } else {
+        if(!empty($_POST['password_change'])){
+            try{
+                // 処理
+                
+            } catch(Exception $e) {
+                // エラー発生時にはロールバック(データが来る前に戻す)する
+                $pdo->rollBack();
+            }
         }
     }
-}
+    $pdo = null;
     
 ?>
 
@@ -83,14 +79,24 @@
         <link rel="stylesheet" type="text/css" href="stylesheet.css">
     </head>
     <body>
-        <h1>マイページ</h1>
+        <header>
+            <h1>マイページ</h1>
+            <ul class="board_header">
+                <li class="board_header_item">
+                    <a href="./index.php">掲示板に戻る</a>
+                </li>
+                <li class="board_header_item">
+                    <a href="./login.php">ログイン</a>
+                </li>
+            </ul>
+        </header>
         <hr>
         <section>
         <form method="post">
             <table>
                 <div>
-                    <th><h2>ユーザー名</h2></th>
-                    <td><input type="submit" name="name_change" value="ユーザー名変更"></td>
+                    <th><h2>ユーザー名変更</h2></th>
+                    <td><input type="submit" name="name_change" value="変更"></td>
                 </div>
             </table>
             <table>

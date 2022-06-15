@@ -18,11 +18,13 @@
     $curren_date=null;
     $message=array();
     $message_array=array();
-    $filename=array();
+    $image_name=array();
+    $image_array=array();
     $upload_file=null;
     $error_message=null;
     $pdo=null;
     $stmt=null;
+    $img=null;
     $res=null;
     $upload_res=null;
     $opt=null;
@@ -69,8 +71,8 @@
             if($upload_res !== true){
                 $error_message[] = '画像アップ失敗(´・ω・`)';
             } else {
-                $filename = $_FILES['upload_file']['name'];
-                $upload_file = FILE_DIR.$filename;
+                $image_name = $_FILES['upload_file']['name'];
+                $upload_file = FILE_DIR.$image_name;
             }
         }
         if(empty($error_message)){
@@ -81,25 +83,21 @@
             // トランザクション開始
             $pdo->beginTransaction();
             try{
-            // SQL作成
-            $stmt = $pdo->prepare("INSERT INTO message ( user_name, message, upload_file, post_date) VALUES ( :user_name, :message, :upload_file, :current_date)");
+            // message_SQL作成
+            $stmt = $pdo->prepare("INSERT INTO message ( user_name, message, post_date) VALUES ( :user_name, :message, :current_date)");
             // 値をセット
             $stmt->bindParam(':user_name',$user_name, PDO::PARAM_STR);
             $stmt->bindParam(':message',$message, PDO::PARAM_STR);
-            $stmt->bindParam(':upload_file',$upload_file, PDO::PARAM_STR);
             $stmt->bindParam(':current_date',$current_date, PDO::PARAM_STR);
             // SQLクエリの実行
             $res = $stmt->execute();
-            /* 勉強備忘録
-            * user_nameは元々user-nameで作っていたのだが
-            * このexecute()をすると
-            * Invalid parameter number: parameter was not defined というエラーが発生した
-            * 内容は「パラメータがないよ(意訳)」なのでbindParam周りだろうと予測
-            * タイポかな？と思うもタイポ無し、原因がわからなかったが……
-            * テーブル名にはハイフンが使えない(バッククォートを使えば使えるが)というのが原因だった
-            * このためCtrl+Aからの置換でuser_nameに変更し、phpMyadminのテーブルもuser_nameに変更したところ
-            * 無事DBの方に記録させることができた。
-            */
+            // image_SQL作成
+            $stmt = $pdo->prepare("INSERT INTO image ( image_name, upload_file) VALUES ( :image_name, :upload_file)");
+            // 値をセット
+            $stmt->bindParam(':image_name',$image_name, PDO::PARAM_STR);
+            $stmt->bindParam(':upload_file',$upload_file, PDO::PARAM_STR);
+            // SQLクエリの実行
+            $res = $stmt->execute();
             // コミット,PDOで登録したデータをDBに反映
             $res = $pdo->commit();
             } catch(Exception $e) {
@@ -122,8 +120,10 @@
 
     if( empty($error_message)){
         // メッセージを新しい順に取得する
-        $sql = "SELECT user_name,message,upload_file,post_date FROM message ORDER BY post_date DESC";
+        $sql = "SELECT user_name,message,post_date FROM message ORDER BY post_date DESC";
+        $sql_image = "SELECT image_name,upload_file FROM image ORDER BY id DESC";
         $message_array = $pdo->query($sql);
+        $image_array = $pdo->query($sql_image);
     }
     // DBとの接続を閉じる
     $pdo = null;
@@ -137,7 +137,17 @@
         <link rel="stylesheet" type="text/css" href="stylesheet.css">
     </head>
     <body>
-        <h1>社員用雑談掲示板</h1>
+        <header>
+            <h1>社内用掲示板</h1>
+            <ul class="board_header">
+                <li class="board_header_item">
+                    <a href="./newaccount.php">新規登録</a>
+                </li>
+                <li class="board_header_item">
+                    <a href="./login.php">ログイン</a>
+                </li>
+            </ul>
+        </header>
         <?php if( empty($_POST['submit']) && !empty($_SESSION['success_message'])): ?>
             <p class="success_message"><?php echo htmlspecialchars( $_SESSION['success_message'],
             ENT_QUOTES,'UTF-8'); ?></p>

@@ -70,7 +70,15 @@
         <link rel="stylesheet" type="text/css" href="stylesheet.css">
     </head>
     <body>
-        <h1>ログインページ</h1>
+        <header>
+            <h1>ログイン</h1>
+            <ul class="board_header">
+                <li class="board_header_item">
+                    <a href="./index.php">掲示板に戻る</a>
+                </li>
+            </ul>
+        </header>
+        <hr>
         <form method="post">
         <div>
             <label>ユーザー名</label>

@@ -5,10 +5,8 @@
     define( 'DB_PASS', 'root');
     define( 'DB_NAME', 'board');
 
-    /*
     ini_set("display_errors", 1);
     error_reporting(E_ALL);
-    */
 
     // タイムゾーン設定
     date_default_timezone_set('Asia/Tokyo');
@@ -20,13 +18,10 @@
     $hash_after=null;
     $message=array();
     $message_array=array();
-    $filename=array();
-    $upload_file=null;
     $error_message=null;
     $pdo=null;
     $stmt=null;
     $res=null;
-    $upload_res=null;
     $opt=null;
 
     session_start();
@@ -69,17 +64,17 @@
             // トランザクション開始
             $pdo->beginTransaction();
             try{
-            // SQL作成
-            $stmt = $pdo->prepare("INSERT INTO user_list ( user_name, permission, password, hash) VALUES ( :user_name, :permission, :password, :hash)");
-            // 値をセット
-            $stmt->bindParam(':user_name',$user_name, PDO::PARAM_STR);
-            $stmt->bindParam(':permission',$permission, PDO::PARAM_STR);
-            $stmt->bindParam(':password',$hash_before, PDO::PARAM_STR);
-            $stmt->bindParam(':hash',$password,PDO::PARAM_STR);
-            // SQLクエリの実行
-            $res = $stmt->execute();
-            // コミット,PDOで登録したデータをDBに反映
-            $res = $pdo->commit();
+                // SQL作成
+                $stmt = $pdo->prepare("INSERT INTO user_list ( user_name, permission, password, hash) VALUES ( :user_name, :permission, :password, :hash)");
+                // 値をセット
+                $stmt->bindParam(':user_name',$user_name, PDO::PARAM_STR);
+                $stmt->bindParam(':permission',$permission, PDO::PARAM_STR);
+                $stmt->bindParam(':password',$hash_before, PDO::PARAM_STR);
+                $stmt->bindParam(':hash',$password,PDO::PARAM_STR);
+                // SQLクエリの実行
+                $res = $stmt->execute();
+                // コミット,PDOで登録したデータをDBに反映
+                $res = $pdo->commit();                
             } catch(Exception $e) {
                 // エラー発生時にはロールバック(データが来る前に戻す)する
                 $pdo->rollBack();
@@ -115,7 +110,14 @@
         <link rel="stylesheet" type="text/css" href="stylesheet.css">
     </head>
     <body>
-        <h1>アカウント作成ページ</h1>
+        <header>
+            <h1>新規アカウント作成</h1>
+            <ul class="board_header">
+                <li class="board_header_item">
+                    <a href="./index.php">掲示板</a>
+                </li>
+            </ul>
+        </header>
         <?php if( empty($_POST['submit']) && !empty($_SESSION['success_message'])): ?>
             <p class="success_message"><?php echo htmlspecialchars( $_SESSION['success_message'],
             ENT_QUOTES,'UTF-8'); ?></p>
