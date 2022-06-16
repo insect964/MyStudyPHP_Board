@@ -5,16 +5,13 @@
     define( 'DB_PASS', 'root');
     define( 'DB_NAME', 'board');
 
-    /*
     ini_set("display_errors", 1);
     error_reporting(E_ALL);
-    */
 
     // タイムゾーン設定
     date_default_timezone_set('Asia/Tokyo');
     // 変数の初期化(不具合防止)
     $user_name=null;
-    $permission=null;
     $password=null;
     $hash_before=null;
     $hash_after=null;
@@ -32,7 +29,7 @@
     session_start();
 
     if(!empty($_GET['logout'])){
-        unset($_SESSION['admin_login']);
+        unset($_SESSION['login']);
     }
 
     // DBに接続
@@ -45,6 +42,34 @@
     } catch(PDOException $e){
         //接続エラー時にエラー内容を取得
         $error_message[] = $e->getMessage();
+    }
+
+    if(!empty($_POST['submit'])){
+        // sql
+        $stmt = $pdo->prepare('SELECT * FROM user_list WHERE user_name = :user_name');
+        // 実行
+        $stmt->execute(array(':user_name' => $_POST['user_name']));
+        // 実行結果(fetchはテーブルのレコードを取得)
+        // fetchだと問題がなく、fetchAllだとエラーになりNULLが出てくる。要勉強。
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // 認証
+        if(password_verify($_POST['password'], $result['hash'])){
+            // echo "ログイン成功";
+            // header("Location: ./mypage.php");
+            $name_post = $_POST['user_name'];
+            $pass_post = $_POST['password'];
+            $_SESSION['login'] = true;
+        } else {
+            echo "ログイン失敗";
+        }
+    }
+
+    if(!empty($error_message)){
+        // 空白除去
+        $user_open = preg_replace( '/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '',
+        $_POST['user_name']);
+        // sql
     }
 
     if(!empty($_POST['name_change'])){
@@ -60,13 +85,14 @@
         if(!empty($_POST['password_change'])){
             try{
                 // 処理
-                
+                header("Location: ./change_pass.php");
             } catch(Exception $e) {
                 // エラー発生時にはロールバック(データが来る前に戻す)する
                 $pdo->rollBack();
             }
         }
     }
+    $stmt = null;
     $pdo = null;
     
 ?>
@@ -92,11 +118,16 @@
         </header>
         <hr>
         <section>
-        <form method="post">
+        <?php if(!empty($_SESSION['login']) && $_SESSION['login'] === true): ?>
+            <!-- マイページ -->
+            <form method="post">
             <table>
                 <div>
                     <th><h2>ユーザー名変更</h2></th>
                     <td><input type="submit" name="name_change" value="変更"></td>
+                    <tr><h2>ユーザー名</h2></tr>
+                    <tr><?php if(!empty($_POST['user_name'])) { echo htmlspecialchars($_POST['user_name'],ENT_QUOTES,'UTF-8');}
+                    elseif(empty($user_open)) { var_dump($_POST['user_name']);} ?></tr>
                 </div>
             </table>
             <table>
@@ -106,6 +137,23 @@
                 </div>
             </table>
         </form>
+        <form method="get" action="">
+            <input type="submit" name="logout" value="ログアウト">
+        </form>
+        <?php else: ?>
+            <!-- ログインページ -->
+            <form method="post">
+            <div>
+                <label>ユーザー名</label>
+                <input type="text" name="user_name">
+            </div>
+            <div>
+                <label>パスワード</label>
+                <input type="password" name="password">
+            </div>
+            <input type="submit" name="submit" value="ログイン">
+            </form>
+        <?php endif; ?>
         </section>
     </body>
 </html>

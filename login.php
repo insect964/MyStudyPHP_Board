@@ -44,7 +44,6 @@
     }
     if(!empty($_POST['submit'])){
 
-
         // sql
         $stmt = $pdo->prepare('SELECT * FROM user_list WHERE user_name = :user_name');
         // 実行
