@@ -1,9 +1,6 @@
 <?php
     // DBの接続情報
-    define( 'DB_PORT', '8889');
-    define( 'DB_USER', 'root');
-    define( 'DB_PASS', 'root');
-    define( 'DB_NAME', 'board');
+    include 'db_access.php';
 
     // 変数の初期化
     $csv_data = null;
@@ -31,7 +28,7 @@
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
             );
-            $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_PORT , DB_USER, DB_PASS, $opt);
+            $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_HOST , DB_USER, DB_PASS, $opt);
             
             // データを取得
             if(!empty($limit)){

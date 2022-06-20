@@ -1,9 +1,6 @@
 <?php
     // DBの接続情報
-    define( 'DB_PORT', '8889');
-    define( 'DB_USER', 'root');
-    define( 'DB_PASS', 'root');
-    define( 'DB_NAME', 'board');
+    include 'db_access.php';
 
     ini_set("display_errors", 1);
     error_reporting(E_ALL);
@@ -37,7 +34,7 @@
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
         );
-        $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_PORT , DB_USER, DB_PASS, $opt);
+        $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_HOST , DB_USER, DB_PASS, $opt);
     } catch(PDOException $e){
         //接続エラー時にエラー内容を取得
         $error_message[] = $e->getMessage();
@@ -84,7 +81,7 @@
             $pdo->beginTransaction();
             try{
             // message_SQL作成
-            $stmt = $pdo->prepare("INSERT INTO message ( user_name, message, post_date) VALUES ( :user_name, :message, :current_date)");
+            $stmt = $pdo->prepare("INSERT INTO message ( user_name, message, upload_file, post_date) VALUES ( :user_name, :message, :current_date)");
             // 値をセット
             $stmt->bindParam(':user_name',$user_name, PDO::PARAM_STR);
             $stmt->bindParam(':message',$message, PDO::PARAM_STR);
@@ -120,10 +117,10 @@
 
     if( empty($error_message)){
         // メッセージを新しい順に取得する
-        $sql = "SELECT user_name,message,post_date FROM message ORDER BY post_date DESC";
-        $sql_image = "SELECT image_name,upload_file FROM image ORDER BY id DESC";
+        $sql = "SELECT user_name,message,upload_file,post_date FROM message ORDER BY post_date DESC";
+        // $sql_image = "SELECT image_name,upload_file FROM image ORDER BY id DESC";
         $message_array = $pdo->query($sql);
-        $image_array = $pdo->query($sql_image);
+        // $image_array = $pdo->query($sql_image);
     }
     // DBとの接続を閉じる
     $pdo = null;
@@ -144,7 +141,7 @@
                     <a href="./newaccount.php">新規登録</a>
                 </li>
                 <li class="board_header_item">
-                    <a href="./login.php">ログイン</a>
+                    <a href="./mypage.php">ログイン</a>
                 </li>
             </ul>
         </header>

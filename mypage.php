@@ -1,9 +1,6 @@
 <?php 
     // DBの接続情報
-    define( 'DB_PORT', '8889');
-    define( 'DB_USER', 'root');
-    define( 'DB_PASS', 'root');
-    define( 'DB_NAME', 'board');
+    include 'db_access.php';
 
     ini_set("display_errors", 1);
     error_reporting(E_ALL);
@@ -38,7 +35,7 @@
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
         );
-        $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_PORT , DB_USER, DB_PASS, $opt);
+        $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_HOST , DB_USER, DB_PASS, $opt);
     } catch(PDOException $e){
         //接続エラー時にエラー内容を取得
         $error_message[] = $e->getMessage();
@@ -60,6 +57,8 @@
             $name_post = $_POST['user_name'];
             $pass_post = $_POST['password'];
             $_SESSION['login'] = true;
+            $_SESSION['name'] = $name_post;
+            $_SESSION['pass'] = $pass_post;
         } else {
             echo "ログイン失敗";
         }
@@ -126,7 +125,7 @@
                     <th><h2>ユーザー名変更</h2></th>
                     <td><input type="submit" name="name_change" value="変更"></td>
                     <tr><h2>ユーザー名</h2></tr>
-                    <tr><?php if(!empty($_POST['user_name'])) { echo htmlspecialchars($_POST['user_name'],ENT_QUOTES,'UTF-8');}
+                    <tr><?php if(!empty($_POST['user_name'])) { echo htmlspecialchars($_SESSION['name'],ENT_QUOTES,'UTF-8');}
                     elseif(empty($user_open)) { var_dump($_POST['user_name']);} ?></tr>
                 </div>
             </table>

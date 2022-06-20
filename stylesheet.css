@@ -1,7 +1,7 @@
 /*------------------------------
 
- Reset Style
- 
+Reset Style
+
 ------------------------------*/
 html, body, div, span, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -126,6 +126,10 @@ h1 {
     text-align: center;
 }
 
+.board_header li {
+    list-style: none;
+    float: right;
+}
 
 /*-----------------------------------
 入力エリア

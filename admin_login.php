@@ -1,9 +1,6 @@
 <?php
     // DBの接続情報
-    define( 'DB_PORT', '8889');
-    define( 'DB_USER', 'root');
-    define( 'DB_PASS', 'root');
-    define( 'DB_NAME', 'board');
+    include 'db_access.php';
 
     /*
     ini_set("display_errors", 1);
@@ -37,7 +34,7 @@
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
         );
-        $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_PORT , DB_USER, DB_PASS, $opt);
+        $pdo = new PDO('mysql:charset=UTF8;dbname='.DB_NAME.';port='.DB_HOST , DB_USER, DB_PASS, $opt);
     } catch(PDOException $e){
         //接続エラー時にエラー内容を取得
         $error_message[] = $e->getMessage();

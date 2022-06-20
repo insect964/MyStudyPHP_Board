@@ -1,10 +1,5 @@
 <?php
-    // DBの接続情報
-    define( 'DB_PORT', '8889');
-    define( 'DB_USER', 'root');
-    define( 'DB_PASS', 'root');
-    define( 'DB_NAME', 'board');
-
+    include 'db_access.php';
     /*
     ini_set("display_errors", 1);
     error_reporting(E_ALL);
@@ -12,15 +7,6 @@
 
     // タイムゾーン設定
     date_default_timezone_set('Asia/Tokyo');
-    // 変数の初期化(不具合防止)
-    $password=null;
-    $name_data=null;
-    $message=array();
-    $error_message=null;
-    $pdo=null;
-    $stmt=null;
-    $res=null;
-    $opt=null;
 
     session_start();
 

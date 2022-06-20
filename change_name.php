@@ -1,9 +1,6 @@
 <?php
     // DBの接続情報
-    define( 'DB_PORT', '8889');
-    define( 'DB_USER', 'root');
-    define( 'DB_PASS', 'root');
-    define( 'DB_NAME', 'board');
+    include 'db_access.php';
 
     /*
     ini_set("display_errors", 1);
@@ -37,6 +34,7 @@
     }
 
     if( !empty($_GET['list_id']) && empty($_POST['list_id'])){
+
         // SQL作成
         $stmt = $pdo->prepare("SELECT * FROM user_list WHERE id = :id");
 
